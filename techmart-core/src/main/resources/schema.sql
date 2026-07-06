@@ -1,0 +1,34 @@
+-- PostgreSQL Schema Setup for TechMart Online e-Commerce System
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS order_items CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS inventory CASCADE;
+DROP TABLE IF EXISTS products CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS contact_messages CASCADE;
+CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(50) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL, email VARCHAR(100) UNIQUE NOT NULL, role VARCHAR(20) NOT NULL DEFAULT 'CUSTOMER', full_name VARCHAR(100), phone VARCHAR(20), street VARCHAR(255), city VARCHAR(100), state VARCHAR(100), zip VARCHAR(20), country VARCHAR(100), created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE categories (id SERIAL PRIMARY KEY, name VARCHAR(100) UNIQUE NOT NULL, description TEXT);
+CREATE TABLE contact_messages (id SERIAL PRIMARY KEY, name VARCHAR(100), email VARCHAR(100) NOT NULL, message TEXT NOT NULL, reply TEXT, replied_at TIMESTAMP WITH TIME ZONE, submitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE products (id SERIAL PRIMARY KEY, name VARCHAR(150) NOT NULL, description TEXT, price DECIMAL(12, 2) NOT NULL CHECK (price >= 0.00), category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL, sku VARCHAR(50) UNIQUE NOT NULL, image_url TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE inventory (id SERIAL PRIMARY KEY, product_id INTEGER UNIQUE NOT NULL REFERENCES products(id) ON DELETE CASCADE, quantity INTEGER NOT NULL CHECK (quantity >= 0), last_updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE orders (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT, order_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, status VARCHAR(20) NOT NULL DEFAULT 'PENDING', total_amount DECIMAL(12, 2) NOT NULL CHECK (total_amount >= 0.00), shipping_address TEXT NOT NULL);
+CREATE TABLE order_items (id SERIAL PRIMARY KEY, order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE, product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE RESTRICT, quantity INTEGER NOT NULL CHECK (quantity > 0), unit_price DECIMAL(12, 2) NOT NULL CHECK (unit_price >= 0.00));
+CREATE TABLE notifications (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, message TEXT NOT NULL, notification_type VARCHAR(20) NOT NULL, status VARCHAR(20) NOT NULL DEFAULT 'PENDING', sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX idx_products_category ON products(category_id);
+CREATE INDEX idx_inventory_product ON inventory(product_id);
+CREATE INDEX idx_orders_user ON orders(user_id);
+CREATE INDEX idx_order_items_order ON order_items(order_id);
+CREATE INDEX idx_order_items_product ON order_items(product_id);
+CREATE INDEX idx_notifications_user ON notifications(user_id);
+CREATE INDEX idx_products_sku ON products(sku);
+CREATE INDEX idx_orders_status ON orders(status);
+INSERT INTO users (username, password, email, role) VALUES ('john_doe', 'hashed_password_123', 'john.doe@example.com', 'CUSTOMER'), ('admin_user', 'admin_secure_pass', 'admin@techmart.com', 'ADMIN');
+INSERT INTO categories (name, description) VALUES ('Laptops', 'High-performance computing and business notebooks'), ('Phones', 'Flagship smartphones and mobile hardware'), ('Headphones', 'Premium over-ear audio and smart earbuds'), ('Speakers', 'Portable audio and immersive home sound systems');
+
+INSERT INTO products (name, description, price, category_id, sku, image_url) VALUES ('Apple MacBook Pro 16" (M3 Max)', 'High performance developer laptop with Apple M3 Max chip, 48GB Unified Memory, and 1TB SSD.', 3499.00, 1, 'LP-MBP16', 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=80'), ('ASUS ROG Zephyrus G14', 'Ultra-thin gaming laptop with RTX 4070, AMD Ryzen 9, and 120Hz ROG Nebula Display.', 1599.00, 1, 'LP-ASG14', 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&q=80'), ('Apple iPhone 16 Pro Max', 'Titanium flagship smartphone with Apple A18 Pro chip, 48MP camera, and 120Hz Super Retina XDR.', 1199.00, 2, 'SM-IP16PM', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80'), ('Samsung Galaxy S24 Ultra', 'AI flagship smartphone with Snapdragon 8 Gen 3, 200MP Quad-Camera system, and S Pen support.', 1299.99, 2, 'SM-S24U', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&q=80'), ('Sony WH-1000XM5 ANC', 'High-fidelity active noise cancelling over-ear wireless headphones with Auto NC Optimizer.', 398.00, 3, 'HP-SXM5', 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80'), ('Apple AirPods Pro (2nd Gen)', 'True wireless smart earbuds with Active Noise Cancellation, Adaptive Audio, and USB-C MagSafe.', 249.00, 3, 'HP-APP2', 'https://images.unsplash.com/photo-1588449668338-d1347b11a4e1?w=400&q=80'), ('Sonos Era 100 Smart Speaker', 'Premium compact smart speaker with acoustics tuned by Grammy-winning producers.', 249.00, 4, 'SP-SE100', 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&q=80'), ('Bose SoundLink Flex Portable', 'Waterproof IP67 rugged portable bluetooth speaker with PositionIQ technology.', 149.00, 4, 'SP-BSLF', 'https://images.unsplash.com/photo-1545454675-3531b543be5d?w=400&q=80'), ('Apple iPhone 17 Pro Max', 'Next-generation flagship smartphone with Apple A19 Pro chip, advanced under-display camera, and polished titanium chassis.', 1499.00, 2, 'SM-IP17PM', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80'), ('Samsung Galaxy S25 Ultra', 'AI flagship smartphone with Snapdragon 8 Gen 4, 200MP camera, and 120Hz Dynamic AMOLED display.', 1299.00, 2, 'SM-S25U', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&q=80'), ('Apple Watch Ultra 2', 'Rugged outdoor smartwatch with dual-frequency GPS, 3000 nits brightness, and 72-hour battery life.', 799.00, 2, 'SM-AWU2', 'https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=400&q=80'), ('Dell XPS 15 9530', 'Stunning 15.6-inch OLED screen developer laptop with Intel Core i9, 32GB DDR5 RAM, and NVIDIA RTX 4060.', 2199.00, 1, 'LP-XPS15', 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=400&q=80');
+
+INSERT INTO inventory (product_id, quantity) VALUES (1, 45), (2, 20), (3, 150), (4, 80), (5, 120), (6, 250), (7, 300), (8, 15), (9, 40), (10, 60), (11, 85), (12, 18);
+DROP TABLE IF EXISTS wishlists CASCADE;
+CREATE TABLE wishlists (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE, added_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, UNIQUE(user_id, product_id));
+CREATE INDEX idx_wishlists_user ON wishlists(user_id);

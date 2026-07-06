@@ -1,0 +1,49 @@
+# Maven target directories & build output
+target/
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.rar
+*.zip
+*.tar.gz
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+**/out/
+
+# VS Code
+.vscode/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated
+
+# NetBeans
+nbproject/private/
+build/
+nbdist/
+
+# Logs & temporary files
+*.log
+logs/
+*.tmp
+*.swp
+*~
+
+# Environment & Secrets
+.env
+.env.local
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
